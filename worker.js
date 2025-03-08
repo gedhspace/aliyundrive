@@ -1,5 +1,10 @@
 
-var refresh_token="";
+import htmlContent from './index.html';
+
+import listfiles from './list.html';
+
+
+var refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDBlNjA0ZmM4YzM0MWVkOTJiODI3YjM5YmMxOWZkNyIsImF1ZCI6Ijc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmIiwiZXhwIjoxNzQ4MDY5MjEzLCJpYXQiOjE3NDAyOTMyMTMsImp0aSI6IjJlNDk4NDk3Y2Y3NzQxNWY5OTcyNDA0NmY3NmRkM2UyIn0.ZDicdlXk8bL5OhI7bYGXHXF-HOeLMPHJCq3agxhAAgdVExmidpxwVD5Ne_StBrUNlO4EJHTCy52wkV45dHl2dw";
 
 
 /**
@@ -22,11 +27,34 @@ async function gatherResponse(response) {
 }
 
 
+async function getCookieValue(cookieString, cookieName) {
+  const cookies = cookieString.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === cookieName) {
+      return value;
+    }
+  }
+  return null;
+}
+
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if(url.pathname=="/api/get_list"){
+
+
+      const cookieString = request.headers.get('cookie');
+      if (cookieString) {
+        const cookieValue = await getCookieValue(cookieString, 'password');
+        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+          return new Response("Pleas login first", { status: 401 });
+
+        }
+      }
+
+
       var access_token=await env.access_token_kv.get("access_token");
       if (access_token === null) {
         return new Response("access_token not found", { status: 404 });
@@ -37,11 +65,14 @@ export default {
 
       }
 
+
+      const params = new URLSearchParams(new URL(url).search);
+
       //res
-      const url = "https://openapi.alipan.com/adrive/v1.0/openFile/list";
+      const url1 = "https://openapi.alipan.com/adrive/v1.0/openFile/list";
       const body = {
         drive_id:drive_id,
-        parent_file_id: "root",
+        parent_file_id: params.get("name"),
 
       };
 
@@ -54,7 +85,7 @@ export default {
           "Authorization": "Bearer "+access_token,
         },
       };
-      const response = await fetch(url, init);
+      const response = await fetch(url1, init);
       const results = await gatherResponse(response);
 
       const modifiedResponse1 = new Response(results, { status: 200 });
@@ -151,6 +182,17 @@ export default {
 
       return fetch(`https://httpbin.org/ip`);
     }else if(url.pathname=="/api/file"){
+
+      const cookieString = request.headers.get('cookie');
+      if (cookieString) {
+        const cookieValue = await getCookieValue(cookieString, 'password');
+        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+          return new Response("Pleas login first. 401 \n @gedhspace @StuffyWalk 制作", { status: 401 });
+
+        }
+      }
+
+
       const params = new URLSearchParams(new URL(url).search);
 
       var access_token=await env.access_token_kv.get("access_token");
@@ -194,8 +236,29 @@ export default {
 
       
 
+    }else if(url.pathname=="/"){
+      
+      return new Response(htmlContent, {
+        headers: { 'Content-Type': 'text/html;charset=utf-8' }
+      });
+
+    }else if(url.pathname=="/list"){
+      
+      const cookieString = request.headers.get('cookie');
+      if (cookieString) {
+        const cookieValue = await getCookieValue(cookieString, 'password');
+        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+          return new Response("Password Worng.\n 密码错误，返回apan.gedh2011.us.kg登录", { status: 401 });
+
+        }
+      }
+
+      return new Response(listfiles, {
+        headers: { 'Content-Type': 'text/html;charset=utf-8' }
+      });
+
     }else{
-      return new Response(url, { status: 404 });
+      return new Response("404 Not Found \n @gedhspace \n @StuffyWalk \n 制作", { status: 404 });
     }
   },
 
