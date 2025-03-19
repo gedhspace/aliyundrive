@@ -4,7 +4,7 @@ import htmlContent from './index.html';
 import listfiles from './list.html';
 
 
-var refresh_token="";
+var refresh_token="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDBlNjA0ZmM4YzM0MWVkOTJiODI3YjM5YmMxOWZkNyIsImF1ZCI6Ijc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmIiwiZXhwIjoxNzQ4MDY5MjEzLCJpYXQiOjE3NDAyOTMyMTMsImp0aSI6IjJlNDk4NDk3Y2Y3NzQxNWY5OTcyNDA0NmY3NmRkM2UyIn0.ZDicdlXk8bL5OhI7bYGXHXF-HOeLMPHJCq3agxhAAgdVExmidpxwVD5Ne_StBrUNlO4EJHTCy52wkV45dHl2dw";
 
 
 /**
@@ -117,7 +117,7 @@ export default {
 
 
     }else if(url.pathname=="/api/get_access_token_new"){
-      const url = "https://api-cf.nn.ci/alist/ali_open/token";
+      const url = "http://api-my-api-5hw5ou-b810d8-80-75-218-107.traefik.me/alist/ali_open/token";
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
@@ -187,7 +187,7 @@ export default {
       if (cookieString) {
         const cookieValue = await getCookieValue(cookieString, 'password');
         if (cookieValue!=="R2RoXzIwMTExMjE4") {
-          return new Response("Pleas login first. 401 \n @gedhspace @StuffyWalk 制作", { status: 401 });
+          return new Response("Pleas login first. 401 \n @gedhspace @StuffyWalk 开发", { status: 401 });
 
         }
       }
@@ -238,24 +238,25 @@ export default {
 
     }else if(url.pathname=="/"){
       
-      return new Response(htmlContent, {
-        headers: { 'Content-Type': 'text/html;charset=utf-8' }
-      });
-
-    }else if(url.pathname=="/list"){
-      
       const cookieString = request.headers.get('cookie');
       if (cookieString) {
         const cookieValue = await getCookieValue(cookieString, 'password');
         if (cookieValue!=="R2RoXzIwMTExMjE4") {
-          return new Response("Password Worng.\n 密码错误，返回apan.gedh2011.us.kg登录", { status: 401 });
+          return new Response(htmlContent, {
+            headers: { 'Content-Type': 'text/html;charset=utf-8' }
+          });
 
+        }else{
+          return new Response(listfiles, {
+            headers: { 'Content-Type': 'text/html;charset=utf-8' }
+          });
         }
       }
-
-      return new Response(listfiles, {
+      return new Response(htmlContent, {
         headers: { 'Content-Type': 'text/html;charset=utf-8' }
       });
+
+      
 
     }else{
       return new Response("404 Not Found \n @gedhspace \n @StuffyWalk \n 制作", { status: 404 });
@@ -264,31 +265,13 @@ export default {
 
 
   async scheduled(event, env, ctx) {
-    const url = "https://api-cf.nn.ci/alist/ali_open/token";
+    const url = "http://api-my-api-5hw5ou-b810d8-80-75-218-107.traefik.me/alist/ali_open/token";
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
 
       };
 
-      /**
-       * gatherResponse awaits and returns a response body as a string.
-       * Use await gatherResponse(..) in an async function to get the response body
-       * @param {Response} response
-       */
-      async function gatherResponse(response) {
-        const { headers } = response;
-        const contentType = headers.get("content-type") || "";
-        if (contentType.includes("application/json")) {
-          return JSON.stringify(await response.json());
-        } else if (contentType.includes("application/text")) {
-          return response.text();
-        } else if (contentType.includes("text/html")) {
-          return response.text();
-        } else {
-          return response.text();
-        }
-      }
 
       const init = {
         body: JSON.stringify(body),
@@ -299,13 +282,50 @@ export default {
       };
       const response = await fetch(url, init);
       const results = await gatherResponse(response);
+
+      var tmp=JSON.parse(results);
+        var access_token_new=tmp["access_token"];
+        console.log(access_token_new);
+
       try{
-        await env.access_token_kv.put("access_token", results);
+        await env.access_token_kv.put("access_token", access_token_new);
       }catch(e){
         return new Response(e.message, { status: 500 });
       }
-      console.log("ok");
-      return new Response(results, init);
+
+
+      
+      //drive_id
+      const url1 = "https://openapi.alipan.com/adrive/v1.0/user/getDriveInfo";
+      const body1 = {
+        
+      };
+
+
+      const init1 = {
+        body: JSON.stringify(body1),
+        method: "POST",
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Authorization": "Bearer "+access_token_new,
+        },
+      };
+      const response1 = await fetch(url1, init1);
+      const results1 = await gatherResponse(response1);
+
+
+      console.log(results1);
+
+
+      var tmp2=JSON.parse(results1);
+
+      try{
+        await env.access_token_kv.put("drive_id", tmp2["resource_drive_id"]);
+      }catch(e){
+        return new Response(e.message, { status: 500 });
+      }
+
+      return new Response(access_token_new+"\n"+tmp2["resource_drive_id"], { status: 200 });
   },
 };
 
