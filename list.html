@@ -1,1 +1,241 @@
 
+<!DOCTYPE html>
+    <head>
+      <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item .file-icon {
+            width: 30px;
+            margin-right: 10px;
+        }
+
+        .file-item .file-details {
+            flex-grow: 1;
+        }
+
+        .file-item .file-size {
+            width: 100px;
+            text-align: right;
+            color: #888;
+        }
+
+        .file-item .file-name {
+            font-weight: bold;
+        }
+
+        .file-item .file-type {
+            color: #888;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            color: #888;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+    </style>
+    </head>
+
+    <body>
+
+
+
+      <div class="container">
+        
+        <h1>Aliyun Drive</h1>
+        <button class="back-button" onclick="goBack()">返回上一页</button>
+        <div id="file-list">
+        </div>
+    </div>
+
+    <footer>
+        <p>@gedhspace @StuffyWalk 开发 2025</p>
+    </footer>
+
+        <script>
+
+function goBack() {
+            window.history.back();
+        }
+
+function GetQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg); //获取url中"?"符后的字符串并正则匹配
+            var context = "";
+            if (r != null)
+                context = decodeURIComponent(r[2]);
+            reg = null;
+            r = null;
+            return context == null || context == "" || context == "undefined" ? "" : context;
+          }
+            function syncRequest(url, param){
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, false); // false 表示同步请求
+            xhr.send(param);
+            if (xhr.status === 200) {
+              return xhr.responseText;
+            } else {
+              throw new Error("请求失败: " + xhr.status);
+            }
+          }
+          
+
+            async function PostWait(url,data){
+                const da=await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: data.toString()
+                })
+                return da.json();
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === null || bytes === undefined) {
+                    return '';
+                }
+
+                const kb = 1024;
+                const mb = kb * 1024;
+
+                if (bytes >= mb) {
+                    return (bytes / mb).toFixed(2) + ' MB';
+                } else if (bytes >= kb) {
+                    return (bytes / kb).toFixed(2) + ' KB';
+                } else {
+                    return bytes + ' 字节';
+                }
+            }
+
+
+            /*
+          //get acusee
+            var tmp=JSON.parse(syncRequest("https://apan.gedh2011.us.kg/api/get_access_token"));
+            console.log(tmp["access_token"]);
+            var token=tmp["access_token"];
+
+
+                const params = new URLSearchParams();
+
+              const xmlhttp = new XMLHttpRequest();
+              xmlhttp.open("POST","https://ojproxy.gedh2011.us.kg/https://openapi.alipan.com/adrive/v1.0/user/getDriveInfo",false);
+              xmlhttp.setRequestHeader('Authorization', 'Bearer ' + token);
+              xmlhttp.setRequestHeader('Content-Type', 'application/json');
+              xmlhttp.send(params);
+                var tmp1=JSON.parse(xmlhttp.responseText);
+              console.log(xmlhttp.responseText);
+
+
+              var driveid=tmp1["resource_drive_id"];
+              console.log(driveid);
+
+
+
+              var data = {
+                drive_id: driveid,
+                parent_file_id: "root"
+                };
+
+                const xmlhttp1 = new XMLHttpRequest();
+                xmlhttp.open("POST","https://ojproxy.gedh2011.us.kg/https://openapi.alipan.com/adrive/v1.0/openFile/list",false);
+                xmlhttp.setRequestHeader('Authorization', 'Bearer ' + token);
+                xmlhttp.setRequestHeader('Content-Type', 'application/json');
+                xmlhttp.send(JSON.stringify(data));
+                console.log(xmlhttp.responseText);
+*/
+/*
+                const xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET","https://apan.gedh2011.us.kg/api/get_list",false);
+                xmlhttp.send();
+                console.log(xmlhttp.responseText);
+                */
+               var nam=GetQueryString("name");
+if(GetQueryString("name")==""){
+  nam="root";
+}
+
+                document.addEventListener('DOMContentLoaded', function() {
+            const fileListDiv = document.getElementById('file-list');
+
+            // 模拟API响应数据（使用您提供的格式）
+            const apiResponse = JSON.parse(syncRequest("https://apan.gedh2011.us.kg/api/get_list?name="+nam));
+
+            // 遍历文件列表并添加到UI
+            apiResponse.items.forEach(item => {
+                const fileItem = document.createElement('div');
+                fileItem.classList.add('file-item');
+
+                const fileIcon = document.createElement('img');
+                fileIcon.classList.add('file-icon');
+                fileIcon。src = item.type === 'folder' ? 'data:image/webp;base64,UklGRjYEAABXRUJQVlA4ICoEAAAQTwCdASr0AfQBPslkslGnpqWiotpIKPAZCWdu4XaxCk+EoOztWEX+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3M+3Mqce/faJBVgcd5EpCciIAjL28Ybwlh5vYvJJU5SM2h+kZfw4CNaJBVhMQRrRIKsJiCMSzxxdBZOTYQeb1x5Uyp7DjQOBJKL4QKsJiCNaJBVhMQRrQtz2rxWRhGXt4w0eF80yITENTZfkorvRj13IP3teN5GG8JYeQ0WAQe3978R7C534j2FzvxHsLnfiPYXO/EZOpaGoPeGjY83sXmVtK7HuOftxz9uOftvf4oW7F5n102cJYeb2LzPt5xbAIy9vGCVaYbCWHm9i8z/LeRhvCWHkNS/s+3M+3M+3PHIwjL28YaPKUYJYeb2LzPvCfq9vGG8IgGfxnm9i8z7c0otexhvCWHGTIiBB5vYvM+3nFsAjL28YJVphsJYeb2LzP8t5GG8JYeQ1L3hB5vYvM+3nFsAjL28YIwM0ReVdcsJ3unQuhdC6F0LoXQuhdC6F0LoXQuhc2ayXzCRhGXt4w4irjn7cc/bjn7cc/fRRcXmfbmfh8kLCIAS/ftxz9uOMv/25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25n25npAAD+/4aawB3gAAAAAAAAAAAAAAb/M/wL+756GlFcH5HmKpv/MZvBeYS6mvYpX3iBX5PfMq0gpQ0xD2uhHPbHhddB4HWoFw1fSuk6lJANDBc1hpACCgG47sNemNt4geoXreZKK56X+37GajSvBP97wjq7Ca4/1P5qFSW1jOIq5t41zbxrc4gOAwPw9BhNKj8XtQPJYuluE+UEcx+SyTgaThCtSDa+S3Lndp3rVCpXC5sYi3evPYQY/apoXG9r+fOM0w0IPsOHu43HYnVb6TV8ekxIWLlSz70DQ4QDEqz0HAg1tVkb2KnydwQPizFWWG4qMMIoo1w9xeBd97cyiFNheo8IJhVEG7a4EVRgCDBzSOquBZW2xNjESKGpoWjbMABMddjEu0VUKw9DbIhG2bs9Am2bs9Am2bs9Am2bs9Am2bs9Am2bs9OEy+K072RY+GUYCZzpM53nfz/MnoCaQuHVk2aQHBS97JIIwMEPWaYes0w9Zph6zSsQAOrcDOA2Y4d/GPyeTFtBkZwmCgoKCgoKCgoKCgoKCgjOGAAAAAAAAAAAAAAAAAAAAAAA' : 'data:image/webp;base64,UklGRhQEAABXRUJQVlA4IAgEAACQLwCdASosASwBPsVirVCnpaSiobOZwPAYiWlu4XHhG/Nv8wTZfoC7KZSJh213TTvLH9OiWZrKkHklCpd84qQeSUKl3zipB5JQqXfOKkHklCpd84qQeSUKl3ziouboUTUjabdzhaAgNSl3zipAjpf0uaJckIbR8G9VPRGTPcjR6iCh+xxRYhkxIDf2QG74cZEld0JgW5WHENDX1ACNfNUNxKE3hy5I39kHjCpxcAvkZzGqVK2nSWJBf/2Yv4VTipB5H0X7svXsurVbnh8byvp/lJnSA39kDNl3iGvKsyz0W1Yd1FHk9SkBv7GRvNVWloCwUyL2bNoYcgklCpd8NcHBIgFy1yIUg45kWxCihl7CDhsXndSHvfJhUtimBcnYHVw+UGKREZ0TI1T2ccHEsspzRn275MKjH0iQsWslxwwiEDGH1E4AkXiPnWlmPKlIDf2QJrcWiR6EUCXsKKCPJKFS75xUg8koVLvnFSDyShUu+cVIPJKFS75xUg8koVLvnFSDySgIAAD+/jikfQABObV6xThCdlyVAERgFgm9ZfXgaQMS4rPJ5qYfFpZfcHD3R0usngIt7rBYgMNyCLlYf1PTe5tf4Z596jPH3AFol+mlrbXPugUZuHWCXAf1xscpoYh2x2ZF41guQRkD9L+cTBNYyZqUAc31nSDbzKZFHIjOMjot6TtcgXKMVqRfUDid7DcdBmpBrU6gm3K9Sqrf5yM7CaW+1s00e/CX8ZnfQkaOAX7nKEcb5DyZkt1eA/W58td3t9XupljQEu+4ipTnImWEKKD4pMCSc4ku5iCEN1ShDb0TlGA4V83l9AIrnvbxe0EpxKvtRA7TwQmjtqFr6f6Fst/oT7NMb5oeXttU3JMNwubSUV4NkpihqMVzN1IPrplY5yDFTawdkgqtHCycG1YpQeu5DFjtBLsKwzpCuKvBJZo/J6LJ9pcww1jCDxHE+nEnK/iZlChlC3T/Ips0vCQLozBa9M5rNQRgosR1BG9v+3X46BGG4Gtd88Nm7pskUjIe9669pDXqrrNj6HAZEgZOOx4NSIvY2QwVtKQcT6NP48wuk3xSVNoM3IaF0TOIYlL43ET2PBSFVXvoE0PW6ym7Hm1n4MM/12lhuAABuAB0UhpLTLHwU6LwvvaJ/49BL86pkKjk+BPbmFlWMgGReI+nBG1OGVZn1PTUctt+cG2A4NFfagWSV1uNfL+FZKGXhA2AS67cN1RpXSyyh0HRd7v+p9ZrSai8rY1vytFoUnTfNlVYNpYopFY6R8/BRP2VFgCJDparfglpu/T7g2H+P142iesfvPG5pv8xVA/AlXlR3pYsn5jMMA0ZCRxAQUIajzfvNQSDjncprJUACBKIzeqTgmYAAAAAAAA='; // 替换为实际图标
+
+                const fileDetails = document.createElement('div');
+                fileDetails.classList.add('file-details');
+                fileDetails.innerHTML = `<div class="file-name">${item.name}</div><div class="file-type">${item.mime_type || item.type}</div>`;
+
+                const fileSize = document.createElement('div');
+                fileSize.classList.add('file-size');
+                fileSize.textContent = formatFileSize(item.size); // 使用格式化后的文件大小
+
+                fileItem.appendChild(fileIcon);
+                fileItem.appendChild(fileDetails);
+                fileItem.appendChild(fileSize);
+
+                fileItem.addEventListener('click', function() {
+                    if (item.type === 'file') {
+                        window.location.href = `https://apan.gedh2011.us.kg/api/file?name=${encodeURIComponent(item.file_id)}`;
+                    } else if (item.type === 'folder') {
+                        window.location.href = `?name=${encodeURIComponent(item.file_id)}`;
+                    }
+                });
+
+
+                fileListDiv.appendChild(fileItem);
+            });
+        });
+    </script>
+
+
+        </script>
+    </body>
+</html>
