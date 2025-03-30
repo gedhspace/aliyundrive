@@ -3,6 +3,8 @@ import htmlContent from './index.html';
 
 import listfiles from './list.html';
 
+import downfiles from './download.html';
+
 
 var refresh_token="";
 
@@ -88,10 +90,67 @@ export default {
       const response = await fetch(url1, init);
       const results = await gatherResponse(response);
 
+
+
       const modifiedResponse1 = new Response(results, { status: 200 });
         modifiedResponse1.headers.set('Access-Control-Allow-Origin', '*');
         console.log(modifiedResponse1);
         return modifiedResponse1;
+
+
+    }else if(url.pathname=="/api/file_v2"){
+      const cookieString = request.headers.get('cookie');
+      if (cookieString) {
+        const cookieValue = await getCookieValue(cookieString, 'password');
+        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+          return new Response("Pleas login first. 401 \n @gedhspace @StuffyWalk 开发", { status: 401 });
+
+        }
+      }
+
+
+      const params = new URLSearchParams(new URL(url).search);
+
+      var access_token=await env.access_token_kv.get("access_token");
+      if (access_token === null) {
+        return new Response("access_token not found", { status: 404 });
+      }
+      var drive_id=await env.access_token_kv.get("drive_id");
+      if (drive_id === null) {
+        return new Response("drive_id not found", { status: 404 });
+
+      }
+
+      //src
+
+      const url1 = "https://openapi.alipan.com/adrive/v1.0/openFile/getDownloadUrl";
+      const body = {
+        drive_id:drive_id,
+        file_id:params.get("name"),
+
+      };
+
+
+      const init = {
+        body: JSON.stringify(body),
+        method: "POST",
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+          "Authorization": "Bearer "+access_token,
+        },
+      };
+      const response = await fetch(url1, init);
+      const results = await gatherResponse(response);
+
+     var tmp=JSON.parse(results);
+     var durl=tmp["url"];
+
+     const modifiedResponse = new Response(results, { status: 200 });
+     modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+     modifiedResponse.headers.set('content-type', 'text/text;charset=utf-8');
+     return modifiedResponse;
+
+
 
 
     }else if(url.pathname=="/api/get_access_token"){
@@ -117,10 +176,13 @@ export default {
 
 
     }else if(url.pathname=="/api/get_access_token_new"){
-      const url = "http://api-my-api-5hw5ou-b810d8-80-75-218-107.traefik.me/alist/ali_open/token";
+      const url = "https://openapi.alipan.com/oauth/access_token";
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
+        client_id:"",
+        client_secret:""
+
 
       };
 
@@ -258,6 +320,24 @@ export default {
 
       
 
+    }else if(url.pathname=="/download"){
+      const cookieString = request.headers.get('cookie');
+      if (cookieString) {
+        const cookieValue = await getCookieValue(cookieString, 'password');
+        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+          return new Response(htmlContent, {
+            headers: { 'Content-Type': 'text/html;charset=utf-8' }
+          });
+
+        }else{
+          return new Response(downfiles, {
+            headers: { 'Content-Type': 'text/html;charset=utf-8' }
+          });
+        }
+      }
+      return new Response(htmlContent, {
+        headers: { 'Content-Type': 'text/html;charset=utf-8' }
+      });
     }else{
       return new Response("404 Not Found \n @gedhspace \n @StuffyWalk \n 制作", { status: 404 });
     }
@@ -265,10 +345,13 @@ export default {
 
 
   async scheduled(event, env, ctx) {
-    const url = "http://api-my-api-5hw5ou-b810d8-80-75-218-107.traefik.me/alist/ali_open/token";
+    const url = "https://openapi.alipan.com/oauth/access_token";
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
+        client_id:"",
+        client_secret:""
+
 
       };
 
