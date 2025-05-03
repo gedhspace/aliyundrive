@@ -102,7 +102,7 @@ export default {
       const cookieString = request.headers.get('cookie');
       if (cookieString) {
         const cookieValue = await getCookieValue(cookieString, 'password');
-        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+        if (cookieValue!=="") {
           return new Response("Pleas login first. 401 \n @gedhspace @StuffyWalk 开发", { status: 401 });
 
         }
@@ -180,8 +180,8 @@ export default {
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
-        client_id:"",
-        client_secret:""
+        client_id:"48363e2d86b1415e89f249794403620a",
+        client_secret:"a087fc6284f843f98dc83b770a5a394a"
 
 
       };
@@ -303,7 +303,7 @@ export default {
       const cookieString = request.headers.get('cookie');
       if (cookieString) {
         const cookieValue = await getCookieValue(cookieString, 'password');
-        if (cookieValue!=="R2RoXzIwMTExMjE4") {
+        if (cookieValue!=="") {
           return new Response(htmlContent, {
             headers: { 'Content-Type': 'text/html;charset=utf-8' }
           });
@@ -349,8 +349,8 @@ export default {
       const body = {
         grant_type:"refresh_token",
         refresh_token: refresh_token,
-        client_id:"",
-        client_secret:""
+        client_id:"48363e2d86b1415e89f249794403620a",
+        client_secret:"a087fc6284f843f98dc83b770a5a394a"
 
 
       };
